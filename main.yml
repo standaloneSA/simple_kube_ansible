@@ -1,0 +1,16 @@
+---
+
+- hosts: all
+  remote_user: root
+  gather_facts: no
+  pre_tasks:
+  - name: 'add hosts'
+    copy:
+      dest: /etc/hosts
+      owner: root
+      group: root
+      mode: 0644
+      src: files/hosts
+  - name: 'disable selinux'
+    selinux:
+      state: disabled
