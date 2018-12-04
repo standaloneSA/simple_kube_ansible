@@ -14,3 +14,9 @@
   - name: 'disable selinux'
     selinux:
       state: disabled
+  - name: 'enable br_netfilter'
+    command: /usr/sbin/modprobe br_netfilter
+  - name: 'setup nf-call-iptables bridge'
+    command: echo 1 > /proc/sys/net/bridge/bridge-nf-call-iptables
+  - name: 'disable swap'
+    command: swapoff -a
