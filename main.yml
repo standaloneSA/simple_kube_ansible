@@ -20,3 +20,25 @@
     command: echo 1 > /proc/sys/net/bridge/bridge-nf-call-iptables
   - name: 'disable swap'
     command: swapoff -a
+  - name: 'install packages'
+    package: 
+      name: [
+      'yum-utils',
+      'device-mapper-persistent-data',
+      'lvm2',
+      ] 
+      state: present
+      update_cache: yes
+  - name: 'setup docker-ce.repo'
+    command: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+  - name: 'Install docker-ce'
+    package:
+      name: docker-ce
+      state: present
+  - name: 'Add kubernetes repo'
+    copy:
+      dest: /etc/yum.repos.d/kubernetes.repo
+      owner: root
+      group: root
+      mode: 0644
+      src: files/kube.repo
