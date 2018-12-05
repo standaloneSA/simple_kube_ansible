@@ -1,0 +1,14 @@
+---
+
+- hosts: all
+  remote_user: root
+  gather_facts: yes
+  tasks:
+    - name: 'Find kubernetes config'
+      stat:
+        path: /etc/kubernetes/kubelet.conf
+      register: kube_config
+    - name: 'Reset kubernetes'
+      command: kubeadm reset -f
+
+
