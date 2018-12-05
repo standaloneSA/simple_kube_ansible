@@ -55,3 +55,14 @@
         'kubectl'
         ]
       state: present
+  - name: 'Enable kubelet'
+    service:
+      name: kubelet
+      enabled: yes
+      state: started
+  - name: 'Enable docker'
+    service:
+      name: docker 
+      enabled: yes
+      state: started
+ 

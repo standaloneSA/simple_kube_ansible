@@ -1,0 +1,41 @@
+---
+
+- hosts: kubemaster
+  remote_user: root
+  gather_facts: yes
+  pre_tasks:
+  - name: 'Initialize Kubernetes'
+    command: kubeadm init
+    args:
+      creates: /var/lib/kubelet/config.yaml
+  - name: 'Check for tokens'
+    shell: kubeadm token list | grep -v '^TOKEN' | wc -l
+    register: num_tokens
+  - name: 'print token var'
+    debug:
+      msg: "{{num_tokens}}"
+  - name: 'Generate new token'
+    command: kubeadm token create --print-join-command 
+    args:
+      creates: /root/kube_token
+    register: kube_token
+    when: num_tokens.stdout == "0"
+  - name: 'Print kube_token'
+    debug: 
+      msg: "{{kube_token.stdout}}"
+    when: num_tokens.stdout == "0"
+  - name: 'Set kube_token fact'
+    set_fact: kube_token="{{kube_token.stdout}}"
+    when: num_tokens.stdout == "0"
+
+- hosts: all
+  remote_user: root
+  gather_facts: yes
+  tasks:
+    - name: 'Join kerberos cluster'
+      command: "{{ hostvars[item]['kube_token'] }}"
+      args:
+        creates: "/etc/kubernetes/kubelet.conf"
+      when: hostvars[item]['kube_token'] is defined
+      with_items: "{{ groups['kubemaster'] }}"
+
