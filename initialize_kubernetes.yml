@@ -19,23 +19,23 @@
     args:
       creates: /root/kube_token
     register: kube_token
-    when: num_tokens.stdout == "0"
+    when: num_tokens.stdout == "1"
   - name: 'Print kube_token'
     debug: 
       msg: "{{kube_token.stdout}}"
-    when: num_tokens.stdout == "0"
+    when: num_tokens.stdout == "1"
   - name: 'Set kube_token fact'
     set_fact: kube_token="{{kube_token.stdout}}"
-    when: num_tokens.stdout == "0"
+    when: num_tokens.stdout == "1"
 
 - hosts: all
   remote_user: root
   gather_facts: yes
   tasks:
     - name: 'Join kubernetes cluster'
-      command: "{{ hostvars[item]['kube_token'] }}"
+      command: "{{ hostvars[item].kube_token }}"
       args:
         creates: "/etc/kubernetes/kubelet.conf"
-      when: hostvars[item]['kube_token'] is defined
+      when: hostvars[item].kube_token is defined
       with_items: "{{ groups['kubemaster'] }}"
 
