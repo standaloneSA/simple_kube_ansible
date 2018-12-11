@@ -11,9 +11,6 @@
   - name: 'Check for tokens'
     shell: kubeadm token list | grep -v '^TOKEN' | wc -l
     register: num_tokens
-  - name: 'print token var'
-    debug:
-      msg: "{{num_tokens}}"
   - name: 'Generate new token'
     command: kubeadm token create --print-join-command 
     args:
@@ -39,3 +36,19 @@
       when: hostvars[item].kube_token is defined
       with_items: "{{ groups['kubemaster'] }}"
 
+- hosts: kubemaster
+  remote_user: root
+  gather_facts: yes
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+  tasks:
+    - name: Verify flannel is not enabled
+      shell: kubectl get pods --all-namespaces | grep flannel | wc -l
+      register: flannel_instances
+    - name: Apply Flannel Config
+      command: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml 
+      when: flannel_instances.stdout == "0"
+    - name: Copy kubeconfig to root
+      command: cp /etc/kubernetes/admin.conf /root/.kube/config
+      args:
+        creates: /root/.kube/config
